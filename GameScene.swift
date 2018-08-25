@@ -347,18 +347,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             //アイテムを生成
             let itemSprite = SKSpriteNode(texture: itemTexture)
             itemSprite.position = CGPoint(x: item_x, y: item_y)
+
+            itemSprite.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: itemSprite.size.width, height: itemSprite.size.height))  //重力を設定
+            itemSprite.physicsBody?.isDynamic = false
+            itemSprite.physicsBody?.categoryBitMask = self.itemScoreCategory
+            itemSprite.physicsBody?.contactTestBitMask = self.birdCategory   //衝突判定させる相手のカテゴリを設定
             
             item.addChild(itemSprite)
-            
-            // スコアアップ用のノード
-            let itemScoreNode = SKNode()
-            itemScoreNode.position = CGPoint(x: item_x, y: item_y)
-            itemScoreNode.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: itemSprite.size.width, height: itemSprite.size.height))  //重力を設定
-            itemScoreNode.physicsBody?.isDynamic = false
-            itemScoreNode.physicsBody?.categoryBitMask = self.itemScoreCategory
-            itemScoreNode.physicsBody?.contactTestBitMask = self.birdCategory   //衝突判定させる相手のカテゴリを設定
-            
-            item.addChild(itemScoreNode)
             
             item.run(itemAnimation)
             
@@ -449,11 +444,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             itemPlayer?.play()
             
-            itemNode.removeFromParent()
-            
-            itemNode = SKNode()
-            scrollNode.addChild(itemNode)
-            setupItem()
+            if (contact.bodyA.categoryBitMask & itemScoreCategory) == itemScoreCategory {
+                contact.bodyA.node?.removeFromParent()
+            }
+            if (contact.bodyB.categoryBitMask & itemScoreCategory) == itemScoreCategory {
+                contact.bodyB.node?.removeFromParent()
+            }
             
         } else {
             //壁か地面と衝突した
